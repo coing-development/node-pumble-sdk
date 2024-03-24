@@ -9,7 +9,7 @@ on:
 jobs:
   publish:
     # prevents this action from running on forks
-    if: github.repository == 'coing-development/node-pumble-sdk'
+    # if: github.repository == 'coing-development/node-pumble-sdk'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
