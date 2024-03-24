@@ -4,7 +4,7 @@ on:
   release:
     types: [published]
     tags:
-      - "v*"
+      - "v*.*.*"
 
 jobs:
   publish:
@@ -14,6 +14,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Extract release version
+        id: vars
+        run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
 
       - name: Set node version to 16
         uses: actions/setup-node@v4
@@ -28,8 +32,10 @@ jobs:
         run: cd pumble-cli && npm install && npm run compile && cd ..
 
       - name: Update Package Versions
+        env:
+          RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
         run: |
-          version=${GITHUB_REF:1}
+          version=${RELEASE_VERSION:1}
           echo 'Updating packages to version:' $version
           cat <<< "$(jq -M --arg version $version '.version=$version' ./pumble-cli/package.json)"  > ./pumble-cli/package.json
           cat <<< "$(jq -M --arg version $version '.version=$version' ./pumble-sdk/package.json)" > ./pumble-sdk/package.json
