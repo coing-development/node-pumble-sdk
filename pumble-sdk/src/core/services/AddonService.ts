@@ -369,7 +369,7 @@ export class AddonService<T extends AddonManifest = AddonManifest> extends Event
                 match: string | RegExp;
                 includeBotMessages?: boolean;
             } = typeof opt === 'string' || opt instanceof RegExp ? { match: opt, includeBotMessages: false } : opt;
-            if (typeof matcher.match === 'string' && evt.payload.body.tx !== matcher.match) {
+            if (typeof matcher.match === 'string' && !evt.payload.body.tx.includes(matcher.match)) {
                 return;
             }
             if (!evt.payload.body.tx.match(matcher.match)) {
