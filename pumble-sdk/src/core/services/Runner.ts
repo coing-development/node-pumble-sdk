@@ -97,6 +97,10 @@ export type App = {
     botScopes?: string[];
     userScopes?: string[];
     port?: number;
+    listingUrl?: string;
+    helpUrl?: string;
+    welcomeMessage?: string;
+    offlineMessage?: string;
 };
 
 class Runner {
@@ -106,20 +110,10 @@ class Runner {
         const emitManifestPath = process.env.PUMBLE_ADDON_EMIT_MANIFEST_PATH;
         const manifest = await this.buildManifest(app, manifest_path);
         if (emitManifestPath) {
-            let existing: AddonManifest | undefined;
-            try {
-                existing = JSON.parse((await fs.readFile(emitManifestPath)).toString());
-            } catch (err) {}
             const { id, signingSecret, clientSecret, appKey, ...cleanedManifest } = manifest;
-            if (!existing || this.hasManifestChanged(existing, cleanedManifest)) {
-                await fs.writeFile(emitManifestPath, JSON.stringify(cleanedManifest));
-            }
+            await fs.writeFile(emitManifestPath, JSON.stringify(cleanedManifest));
         }
         return await this.startAddonServer(app, manifest, port);
-    }
-
-    public hasManifestChanged(oldManifest: Partial<AddonManifest>, newManifest: Partial<AddonManifest>): boolean {
-        return !_.isEqual(oldManifest, newManifest);
     }
 
     private async startAddonServer(app: App, manifest: AddonManifest, port: number): Promise<Addon<AddonManifest>> {
@@ -143,7 +137,6 @@ class Runner {
     private async buildManifest(app: App, manifestPath: string): Promise<AddonManifest> {
         const hookUrl = `/hook`;
         const redirectUrl = `/redirect`;
-        const blockInteractionsUrl = `/blockInteractions`;
         const manifest = JSON.parse((await fs.readFile(manifestPath)).toString());
         manifest.id = app.id || process.env.PUMBLE_APP_ID;
         manifest.clientSecret = app.clientSecret || process.env.PUMBLE_APP_CLIENT_SECRET;
@@ -190,7 +183,7 @@ class Runner {
         ];
         manifest.blockInteraction = app.blockInteraction
             ? {
-                  url: app.blockInteraction?.path ?? blockInteractionsUrl,
+                  url: app.blockInteraction?.path ?? hookUrl,
                   handlerView: (ctx: BlockInteractionContext<'VIEW'>) => {
                       if (!app.blockInteraction?.interactions) {
                           return;
@@ -247,6 +240,10 @@ class Runner {
         if (app.userScopes) {
             manifest.scopes.userScopes = app.userScopes;
         }
+        manifest.listingUrl = app.listingUrl;
+        manifest.helpUrl = app.helpUrl;
+        manifest.welcomeMessage = app.welcomeMessage;
+        manifest.offlineMessage = app.offlineMessage;
         return manifest;
     }
 }
