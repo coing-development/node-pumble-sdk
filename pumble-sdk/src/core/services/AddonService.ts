@@ -151,12 +151,16 @@ export class AddonService<T extends AddonManifest = AddonManifest> extends Event
             try {
                 await cb(...args);
             } catch (err) {
-                if (name !== ERROR) {
-                    this.emit(ERROR, {
-                        eventData: args[0],
-                        event: name,
-                        error: err,
-                    });
+                if (this.listeners(ERROR) && this.listeners(ERROR).length) {
+                    if (name !== ERROR) {
+                        this.emit(ERROR, {
+                            eventData: args[0],
+                            event: name,
+                            error: err,
+                        });
+                    }
+                } else {
+                    console.error('Unhandled error occurred', { eventData: args[0], event: name, error: err });
                 }
             }
         };

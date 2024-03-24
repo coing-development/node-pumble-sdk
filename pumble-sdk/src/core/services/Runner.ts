@@ -109,11 +109,17 @@ class Runner {
         const manifest_path = process.env.PUMBLE_ADDON_MANIFEST_PATH || 'manifest.json';
         const emitManifestPath = process.env.PUMBLE_ADDON_EMIT_MANIFEST_PATH;
         const manifest = await this.buildManifest(app, manifest_path);
+        const addon = await this.startAddonServer(app, manifest, port);
         if (emitManifestPath) {
+            /**
+             * This should be called after the addon server has started,
+             * since the cli with capture changes in this file and will try to reauthorize if scopes have changed.
+             * In order to reauthorize we need the addon running
+             * */
             const { id, signingSecret, clientSecret, appKey, ...cleanedManifest } = manifest;
             await fs.writeFile(emitManifestPath, JSON.stringify(cleanedManifest));
         }
-        return await this.startAddonServer(app, manifest, port);
+        return addon;
     }
 
     private async startAddonServer(app: App, manifest: AddonManifest, port: number): Promise<Addon<AddonManifest>> {
@@ -127,9 +133,6 @@ class Runner {
         if (app.onServerConfiguring) {
             addon.onServerConfiguring(app.onServerConfiguring);
         }
-        addon.onError((err) => {
-            console.error('Unhandled error occurred', err);
-        });
         await addon.start();
         return addon;
     }
