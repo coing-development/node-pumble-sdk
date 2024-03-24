@@ -13,6 +13,10 @@ jobs:
       - name: Bump minor version
         run: npm version minor
       - name: Sync Version of pumble-sdk and pumble-cli and template
-        run: ./sync-version.sh
-      - name: Test output
-        run: cat ./pumble-cli/template/_package.json
+        run: ./sync-version.sh && cat ./pumble-cli/template/_package.json
+      - name: Commit Version
+        run: git commit -m "(Github Actions) Update Version"
+      - name: Run Changelog CI
+        uses: saadmk11/changelog-ci@v1.1.2
+      - name: Print Changelog
+        run: cat ./CHANGELOG.md
