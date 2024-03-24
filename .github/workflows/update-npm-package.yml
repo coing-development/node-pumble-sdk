@@ -1,0 +1,16 @@
+name: update-npm-package
+on: [push]
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup NodeJs
+        uses: actions/setup-node@v4
+      - name: Bump minor version
+        run: npm version minor
+      - name: Sync Version of pumble-sdk and pumble-cli and template
+        run: ./sync-version.sh
+      - name: Test output
+        run: cat ./pumble-cli/template/_package.json
