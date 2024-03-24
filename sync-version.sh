@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/sh
 version=$(jq -r '.version' package.json)
 echo 'Updating packages to version:' $version
 cat <<< $(jq -M --arg version $version '.version=$version' ./pumble-cli/package.json) > ./pumble-cli/package.json
