@@ -499,7 +499,8 @@ export class AddonService<T extends AddonManifest = AddonManifest> extends Event
         }) => {
             return this.clientUtils.generateAuthUrl(options);
         };
-        return { payload, getBotClient, getUserClient, getBotUserId, getAuthUrl };
+        const getManifest = () => this.getManifest();
+        return { payload, getBotClient, getUserClient, getBotUserId, getAuthUrl, getManifest };
     }
 
     private createChannelDetailsContext<T>(
