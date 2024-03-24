@@ -1,15 +1,15 @@
 name: Publish Package
 
 on:
-  [push]
-  # push:
-  #   tags:
-  #     - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
+  release:
+    types: [published]
+    tags:
+      - "v*"
 
 jobs:
   publish:
     # prevents this action from running on forks
-    # if: github.repository == 'coing-development/node-pumble-sdk'
+    if: github.repository == 'coing-development/node-pumble-sdk'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -29,12 +29,17 @@ jobs:
 
       - name: Update Package Versions
         run: |
-          version=1.1.0
+          version=${GITHUB_REF:1}
           echo 'Updating packages to version:' $version
           cat <<< "$(jq -M --arg version $version '.version=$version' ./pumble-cli/package.json)"  > ./pumble-cli/package.json
           cat <<< "$(jq -M --arg version $version '.version=$version' ./pumble-sdk/package.json)" > ./pumble-sdk/package.json
           cat <<< "$(jq -M --arg version $version '.devDependencies["pumble-cli"]=$version' ./pumble-cli/template/_package.json)" > ./pumble-cli/template/_package.json
           cat <<< "$(jq -M --arg version $version '.dependencies["pumble-sdk"]=$version' ./pumble-cli/template/_package.json)" > ./pumble-cli/template/_package.json
+          echo 'CLI package.json'
+          cat ./pumble-cli/package.json
+          echo 'SDK package.json'
+          cat ./pumble-sdk/package.json
+          echo 'Template package.json'
           cat ./pumble-cli/template/_package.json
 
       # - name: Publish SDK
