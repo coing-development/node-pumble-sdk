@@ -16,8 +16,5 @@
   },
   "dependencies": {
     "pumble-sdk": "1.0.0"
-  },
-  "devDependecies": {
-    "pumble-cli": "1.0.0"
   }
 }

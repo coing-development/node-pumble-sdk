@@ -1,0 +1,46 @@
+name: Publish Package
+
+on:
+  push:
+    tags:
+      - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
+
+jobs:
+  publish:
+    # prevents this action from running on forks
+    if: github.repository == 'coing-development/node-pumble-sdk'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set node version to 16
+        uses: actions/setup-node@v4
+        with:
+          node-version: "16.x"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Prepare SDK
+        run: cd pumble-sdk && npm install && npm run compile && cd ..
+
+      - name: Prepare CLI
+        run: cd pumble-cli && npm install && npm run compile && cd ..
+
+      - name: Update Package Versions
+        run: |
+          echo 'Updating packages to version:' $version
+          cat <<< "$(jq -M --arg version $version '.version=$version' ./pumble-cli/package.json)"  > ./pumble-cli/package.json
+          cat <<< "$(jq -M --arg version $version '.version=$version' ./pumble-sdk/package.json)" > ./pumble-sdk/package.json
+          cat <<< "$(jq -M --arg version $version '.devDependencies["pumble-cli"]=$version' ./pumble-cli/template/_package.json)" > ./pumble-cli/template/_package.json
+          cat <<< "$(jq -M --arg version $version '.dependencies["pumble-sdk"]=$version' ./pumble-cli/template/_package.json)" > ./pumble-cli/template/_package.json
+          cat ./pumble-cli/template/_package.json
+
+      # - name: Publish SDK
+      #   run: cd pumble-sdk && npm run publish
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # - name: Publish CLI
+      #   run: cd pumble-cli && npm run publish
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
