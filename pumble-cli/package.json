@@ -10,6 +10,10 @@
     "bin": {
         "pumble-cli": "./bin/pumble-cli"
     },
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:coing-development/node-pumble-sdk.git"
+    },
     "keywords": [
         "pumble",
         "cli"
