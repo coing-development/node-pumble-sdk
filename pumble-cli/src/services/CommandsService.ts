@@ -39,9 +39,9 @@ class CommandsService {
         }
     }
 
-    public async info(globalconfigFile: string) {
+    public async info(globalConfigFile: string) {
         try {
-            await this.loadEnvironment(globalconfigFile);
+            await this.loadEnvironment(globalConfigFile);
             if (cliLogin.isLoggedIn()) {
                 const { id: workspaceId, name: workspaceName } = await cliPumbleApiClient.getWorkspaceInfo();
                 const { id: userId, name: userName, email: userEmail } = await cliPumbleApiClient.userInfo();

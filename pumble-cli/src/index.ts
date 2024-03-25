@@ -73,7 +73,7 @@ async function main() {
             'Generate the template for an existing app',
             (y) => y,
             async (args) => {
-                await commandsService.connect(args.globalConfigFile);
+                await commandsService.scaffold(args.globalConfigFile);
             }
         )
         .command(

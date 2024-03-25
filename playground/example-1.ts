@@ -158,7 +158,7 @@ const app: App = {
     listingUrl: 'https://listing.com',
     helpUrl: 'https://help.com',
     welcomeMessage: 'Hello',
-    offlineMessage: 'Demo up cannot respond at this moment. Please try again later',
+    offlineMessage: 'Demo app cannot respond at this moment. Please try again later',
 };
 
 async function main() {

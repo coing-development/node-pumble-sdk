@@ -97,16 +97,22 @@ class AppSync {
                 }
             }
         }
-        if (!(await this.isAuthorized(app.id)) && install) {
-            await this.authorizeApp(app, manifest);
-            logger.success('Authorized ' + cyan`${app.name as string}`);
-        } else {
-            if (this.botScopesChanged(app, manifest) && install) {
-                await this.reinstallApp(app, manifest);
-                logger.success('Bot scopes have changed. App is reinstalled.');
-            } else if (this.userScopesChanged(app, manifest) && install) {
+        /**
+         * If app is just created we need to restart the App server, so it will get the new environment variables
+         * We can not yet authorize
+         */
+        if (!created) {
+            if (!(await this.isAuthorized(app.id)) && install) {
                 await this.authorizeApp(app, manifest);
-                logger.success('User scopes have changed. App is reauthorized.');
+                logger.success('Authorized ' + cyan`${app.name as string}`);
+            } else {
+                if (this.botScopesChanged(app, manifest) && install) {
+                    await this.reinstallApp(app, manifest);
+                    logger.success('Bot scopes have changed. App is reinstalled.');
+                } else if (this.userScopesChanged(app, manifest) && install) {
+                    await this.authorizeApp(app, manifest);
+                    logger.success('User scopes have changed. App is reauthorized.');
+                }
             }
         }
         return { created };

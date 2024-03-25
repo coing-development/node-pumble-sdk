@@ -9,7 +9,7 @@ import { cliAppSync } from './AppSync';
 import { jsonc } from 'jsonc';
 import _ from 'lodash';
 import { logger } from './Logger';
-import { cyan } from 'ansis';
+import { cyan, yellow } from 'ansis';
 
 export type WatcherArgs = {
     globalConfigFile: string;
@@ -45,6 +45,7 @@ export type UpdaterArgs = {
  *
  */
 class Watcher {
+    private tsc?: childProcess.ChildProcess;
     private child: childProcess.ChildProcess | undefined = undefined;
 
     /**
@@ -89,6 +90,10 @@ class Watcher {
      *    On changes resync the App in Pumble
      */
     public async startWatcher(args: WatcherArgs) {
+        process.on('exit', () => {
+            this.tsc?.kill('SIGKILL');
+            this.child?.kill('SIGKILL');
+        });
         await cliEnvironment.loadEnvironment();
         const port = await this.getPort(args.port);
         const tunnelUrl = args.host ? args.host : await this.startTunnel(port);
@@ -108,7 +113,7 @@ class Watcher {
              * Start typescript compiler in watch mode
              */
             logger.info(`Starting ` + cyan`tsc --watch`);
-            childProcess.spawn('tsc', args.tsconfig ? ['--watch', '-p', args.tsconfig] : ['--watch'], {
+            this.tsc = childProcess.spawn('tsc', args.tsconfig ? ['--watch', '-p', args.tsconfig] : ['--watch'], {
                 stdio: 'inherit',
                 detached: false,
                 killSignal: 'SIGKILL',
@@ -125,7 +130,7 @@ class Watcher {
                             console.log('Restarting app!');
                             await this.startChild(args, port);
                         });
-                        this.child.kill(9);
+                        this.child.kill('SIGKILL');
                     } else {
                         await this.startChild(args, port);
                     }
@@ -142,7 +147,16 @@ class Watcher {
             });
             emittedManifestWatcher.on('all', async () => {
                 const manifest = JSON.parse((await fs.readFile(args.emitManifestPath)).toString());
-                await cliAppSync.syncApp(manifest, tunnelUrl, args.install);
+                const { created } = await cliAppSync.syncApp(manifest, tunnelUrl, args.install);
+                if (this.child && created) {
+                    this.child.once('close', () => {
+                        console.log(
+                            yellow(`App is just created in Pumble. Restarting app server to sync the new environment`)
+                        );
+                        this.startChild(args, port);
+                    });
+                    this.child.kill('SIGKILL');
+                }
             });
         }
     }
