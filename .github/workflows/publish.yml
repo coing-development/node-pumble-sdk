@@ -7,9 +7,10 @@ on:
       - "v*.*.*"
 
 jobs:
-  publish:
+  deployment:
     # prevents this action from running on forks
     if: github.repository == 'coing-development/node-pumble-sdk'
+    environment: Production
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
