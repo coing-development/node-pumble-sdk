@@ -134,7 +134,7 @@ class CommandsService {
         }
     }
 
-    public async update(args: {
+    public async prePublish(args: {
         globalConfigFile: string;
         program: string;
         host?: string;

@@ -85,8 +85,8 @@ async function main() {
             }
         )
         .command(
-            'update',
-            'Update your app',
+            'pre-publish',
+            'Prepare your app for publishing',
             (y) => {
                 return y
                     .option('program', {
@@ -117,7 +117,7 @@ async function main() {
                     });
             },
             async (y) => {
-                await commandsService.update(y);
+                await commandsService.prePublish(y);
             }
         )
         .command(
